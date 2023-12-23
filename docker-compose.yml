@@ -1,0 +1,52 @@
+version: '3.3'
+
+networks:
+  clientbotosor:
+
+services:
+  bot:
+    container_name: bot
+    restart: always
+    build:
+      context: ./WorkBot  # Указываем путь к контексту сборки WorkBot
+      dockerfile: Dockerfile
+    volumes:
+      - /opt/services/bot/work-bot
+    environment:
+      - POSTGRES_DB=osor_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_HOST=172.23.0.2
+    depends_on:
+      - db
+    networks:
+      - clientbotosor
+
+  osor_client_bot:
+    container_name: osor_client_bot
+    restart: always
+    build:
+      context: ./ClientBotOSOR  # Указываем путь к контексту сборки ClientBotOSOR
+      dockerfile: Dockerfile
+    volumes:
+      - /opt/osor_client_bot
+    environment:
+      - POSTGRES_DB=osor_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_HOST=172.23.0.2  # Используйте имя контейнера с БД
+    depends_on:
+      - bot
+    networks:
+      - clientbotosor
+
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=osor_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+    ports:
+      - "5432:5432"
+    networks:
+      - clientbotosor
